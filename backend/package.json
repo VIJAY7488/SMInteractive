@@ -4,11 +4,10 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-  "dev": "nodemon --exec ts-node src/index.ts",
-  "build": "tsc && cp ./package.json ./dist",
-  "start": "node dist/index.js"
+    "dev": "nodemon --exec ts-node src/index.ts",
+    "build": "tsc && cp ./package.json ./dist",
+    "start": "node dist/index.js"
   },
-
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -23,6 +22,10 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/express": "^5.0.5",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^24.10.0",
     "nodemon": "^3.1.10",
     "prettier": "^3.6.2",
     "ts-node": "^10.9.2",
