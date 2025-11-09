@@ -1,5 +1,6 @@
 import { ErrorCodeEnum, ErrorCodeEnumType } from '../enums/error-code.enum';
 import { HTTPSTATUS, HttpStatusCodeType } from '../config/http.config';
+import { http } from 'winston';
 
 export class AppError extends Error {
   public statusCode: HttpStatusCodeType;
@@ -60,12 +61,55 @@ export class BadRequestException extends AppError {
   }
 }
 
-export class UnauthorizedException extends AppError {
-  constructor(message = 'Unauthorized Access', errorCode?: ErrorCodeEnumType) {
+export class ValidationError extends AppError {
+  constructor(message: string) {
+    super(message, HTTPSTATUS.BAD_REQUEST, ErrorCodeEnum.VALIDATION_ERROR);
+  }
+}
+
+
+export class AuthenticationError extends AppError {
+  constructor(message: string = 'Authentication failed') {
+    super(message, HTTPSTATUS.UNAUTHORIZED, ErrorCodeEnum.AUTH_UNAUTHORIZED_ACCESS);
+  }
+}
+
+export class AuthorizationError extends AppError {
+  constructor(message: string = 'You do not have permission to perform this action') {
+    super(message, HTTPSTATUS.FORBIDDEN, ErrorCodeEnum.ACCESS_UNAUTHORIZED);
+  }
+}
+
+export class NotFoundError extends AppError {
+  constructor(resource: string = 'Resource') {
+    super(`${resource} not found`, HTTPSTATUS.NOT_FOUND, ErrorCodeEnum.RESOURCE_NOT_FOUND);
+  }
+}
+
+export class ConflictError extends AppError {
+  constructor(message: string) {
+    super(message, HTTPSTATUS.CONFLICT, ErrorCodeEnum.CONFLICT_ERROR);
+  }
+}
+
+export class InsufficientCoinsError extends AppError {
+  constructor(required: number, available: number) {
     super(
-      message,
-      HTTPSTATUS.UNAUTHORIZED,
-      errorCode || ErrorCodeEnum.ACCESS_UNAUTHORIZED,
+      `Insufficient coins. Required: ${required}, Available: ${available}`,
+      HTTPSTATUS.BAD_REQUEST,
+      ErrorCodeEnum.INSUFFICIENT_COINS
     );
+  }
+}
+
+export class SpinWheelError extends AppError {
+  constructor(message: string) {
+    super(message, HTTPSTATUS.BAD_REQUEST, ErrorCodeEnum.SPIN_WHEEL_ERROR);
+  }
+}
+
+export class ConcurrencyError extends AppError {
+  constructor(message: string = 'Concurrent operation conflict') {
+    super(message, HTTPSTATUS.CONFLICT, ErrorCodeEnum.CONCURRENCY_ERROR);
   }
 }
