@@ -1,42 +1,81 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 
 export interface ITransaction extends Document {
-  _id: Types.ObjectId;
   userId: Types.ObjectId;
   spinWheelId: Types.ObjectId;
-  type: "entry_fee" | "refund" | "winner_payout" | "admin_payout";
+  type: "entry_fee" | "refund" | "winner_payout" | "admin_payout" | "app_fee";
   amount: number;
   balanceBefore: number;
   balanceAfter: number;
-  status: "pending" | "completed" | "failed";
+  status: "pending" | "completed" | "failed" | "refunded";
+  description?: string;
+  metadata?: {
+    winnerPoolAmount?: number;
+    adminPoolAmount?: number;
+    appPoolAmount?: number;
+    reason?: string;
+  };
   createdAt: Date;
-  metadata?: Record<string, any>;
+  updatedAt: Date;
 }
 
 const transactionSchema = new Schema<ITransaction>(
   {
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    spinWheelId: { type: Schema.Types.ObjectId, ref: "Game", required: true },
+    userId: { 
+      type: Schema.Types.ObjectId,
+       ref: "User", 
+       required: [true, "User ID is required"],
+       index: true
+    },
+    spinWheelId: { 
+      type: Schema.Types.ObjectId, 
+      ref: "SpinWheel", 
+      required: [true, "Spin Wheel ID is required"],
+      index: true
+    },
     type: {
       type: String,
-      enum: ["entry_fee", "refund", "winner_payout", "admin_payout"],
-      required: true,
+      enum: ["entry_fee", "winner_payout", "admin_payout", "refund", "app_fee"],
+      required: [true, "Transaction type is required"],
     },
-    amount: { type: Number, required: true },
-    balanceBefore: { type: Number, required: true },
-    balanceAfter: { type: Number, required: true },
+    amount: { 
+      type: Number, 
+      required: [true, "Amount is required"] 
+    },
+    balanceBefore: { 
+      type: Number, 
+      required: [true, "Balance before is required"] 
+    },
+    balanceAfter: { 
+      type: Number, 
+      required: [true, "Balance after is required"] 
+    },
     status: {
       type: String,
-      enum: ["pending", "completed", "failed"],
+      enum: ["pending", "completed", "failed", "refunded"],
       default: "pending",
     },
-    createdAt: { type: Date, default: Date.now },
-    metadata: { type: Object },
+    description: { 
+      type: String,
+    },
+    metadata: {
+      winnerPoolAmount: { type: Number },
+      adminPoolAmount: { type: Number },
+      appPoolAmount: { type: Number },
+      reason: { type: String },
+    },
   },
-  { timestamps: false } // we already track createdAt manually
+  { timestamps: true } 
 );
 
-export const Transaction = mongoose.model<ITransaction>(
+// Indexes to optimize queries
+transactionSchema.index({ userId: 1, createdAt: -1 });
+transactionSchema.index({ spinWheelId: 1, type: 1 });
+transactionSchema.index({ status: 1, createdAt: -1 });
+
+const Transaction = mongoose.model<ITransaction>(
   "Transaction",
   transactionSchema
 );
+
+export default Transaction;
