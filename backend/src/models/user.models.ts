@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 
 
 export interface IUser extends Document {
+_id: mongoose.Types.ObjectId;
 name: string;
 email: string;
 password: string;
