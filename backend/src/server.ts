@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 import http from 'http';
 import app from './app';
-import { connectDB } from './utils/db';
+import connectDB from './config/database.config';
 import { initSocket } from './socket';
 
 
