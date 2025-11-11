@@ -47,7 +47,7 @@ export interface ISpinWheel extends Document {
 
   // Results
   winnerId?: Types.ObjectId;
-  winnerUsername?: string;    // ADDED: Winner username cache
+  winnerName?: string;    // ADDED: Winner name cache
   eliminationSequence: Types.ObjectId[];
   currentEliminationIndex: number; // ADDED: Track current elimination progress
 
@@ -189,7 +189,7 @@ const SpinWheelSchema = new Schema<ISpinWheel>(
       type: Schema.Types.ObjectId, 
       ref: "User" 
     },
-    winnerUsername: {
+    winnerName: {
       type: String,
       trim: true
     },
