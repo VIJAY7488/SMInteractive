@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import User, { IUser } from '../models/user.models'
-import { AuthenticationError, AuthorizationError } from '../utils/apiResponse.js';
+import { AuthenticationError, AuthorizationError } from '../utils/apiResponse';
 import logger from '../utils/logger';
 
 
