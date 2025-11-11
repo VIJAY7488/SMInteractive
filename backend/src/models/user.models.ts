@@ -54,8 +54,8 @@ isActive: {
     default: true
 },
 lastLogin: {
-    type: Boolean,
-    default: true
+    type: Date,
+    default: Date.now
 },
 }, { timestamps: true
 });
