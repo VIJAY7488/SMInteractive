@@ -5,7 +5,7 @@ import Transaction, { TransactionType } from '../models/transaction.models';
 import {
   SpinWheelError,
   NotFoundError,
-  InsufficientFundsError,
+  InsufficientCoinsError,
   ConflictError,
 } from '../utils/apiResponse';
 import { loggers } from '../utils/logger';
@@ -125,11 +125,10 @@ export class SpinWheelService {
       }
 
       // Check sufficient balance
-      if (user.coinBalance < spinWheel.entryFee) {
-        throw new InsufficientFundsError(
-          `Insufficient coins. Required: ${spinWheel.entryFee}, Available: ${user.coinBalance}`
-        );
+      if (user.coins < spinWheel.entryFee) {
+        throw new InsufficientCoinsError(spinWheel.entryFee, user.coins);
       }
+
 
       // Calculate distribution
       const winnerAmount = (spinWheel.entryFee * spinWheel.winnerPoolPercentage) / 100;
@@ -190,7 +189,7 @@ export class SpinWheelService {
         -spinWheel.entryFee,
         {
           spinWheelId: spinWheel._id.toString(),
-          newBalance: user.coinBalance,
+          newBalance: user.coins,
           totalParticipants: spinWheel.participants.length
         }
       );
@@ -271,8 +270,8 @@ export class SpinWheelService {
         const user = await User.findById(participant.userId).session(session);
 
         if (user) {
-          const balanceBefore = user.coinBalance;
-          user.coinBalance += participant.entryFeePaid;
+          const balanceBefore = user.coins;
+          user.coins += participant.entryFeePaid;
           await user.save({ session });
 
           // Create refund transaction
@@ -283,7 +282,7 @@ export class SpinWheelService {
             type: TransactionType.REFUND,
             amount: participant.entryFeePaid,
             balanceBefore,
-            balanceAfter: user.coinBalance,
+            balanceAfter: user.coins,
             metadata: {
               reason: 'Spin wheel aborted - insufficient participants',
               originalEntryFee: participant.entryFeePaid
@@ -404,8 +403,8 @@ export class SpinWheelService {
       // Credit winner
       const winnerUser = await User.findById(winner.userId).session(session);
       if (winnerUser) {
-        const winnerBalanceBefore = winnerUser.coinBalance;
-        winnerUser.coinBalance += spinWheel.winnerPool;
+        const winnerBalanceBefore = winnerUser.coins;
+        winnerUser.coins += spinWheel.winnerPool;
         await winnerUser.save({ session });
 
         const winnerTransaction = new Transaction({
@@ -415,7 +414,7 @@ export class SpinWheelService {
           type: TransactionType.PRIZE_WIN,
           amount: spinWheel.winnerPool,
           balanceBefore: winnerBalanceBefore,
-          balanceAfter: winnerUser.coinBalance,
+          balanceAfter: winnerUser.coins,
           metadata: {
             adminId: spinWheel.adminId,
             participants: spinWheel.participants.length,
@@ -440,8 +439,8 @@ export class SpinWheelService {
       // Credit admin
       const adminUser = await User.findById(spinWheel.adminId).session(session);
       if (adminUser) {
-        const adminBalanceBefore = adminUser.coinBalance;
-        adminUser.coinBalance += spinWheel.adminPool;
+        const adminBalanceBefore = adminUser.coins;
+        adminUser.coins += spinWheel.adminPool;
         await adminUser.save({ session });
 
         const adminTransaction = new Transaction({
@@ -451,7 +450,7 @@ export class SpinWheelService {
           type: TransactionType.ADMIN_COMMISSION,
           amount: spinWheel.adminPool,
           balanceBefore: adminBalanceBefore,
-          balanceAfter: adminUser.coinBalance,
+          balanceAfter: adminUser.coins,
           metadata: {
             winnerId: winner.userId,
             winnerName: winner.name,
