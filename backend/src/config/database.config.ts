@@ -3,7 +3,7 @@ import logger from '../utils/logger';
 
 const connectDB = async (): Promise<void> => {
     try {
-        const mongoURI = process.env.MONGO_URI as string;
+        const mongoURI = process.env.MONGODB_URI as string;
         
         const options = {
             maxPoolSize: 10,
