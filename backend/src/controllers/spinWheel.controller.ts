@@ -12,7 +12,7 @@ export const createSpinWheel = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { entryFee } = req.body;
+    const { entryFee, maxParticipants } = req.body;
     const user = req.user;
 
     if (!user) {
@@ -22,7 +22,8 @@ export const createSpinWheel = async (
     const spinWheel = await SpinWheelService.createSpinWheel(
       user._id.toString(),
       user.name,
-      entryFee
+      entryFee,
+      maxParticipants
     );
 
     logger.info(`Spin wheel created by admin ${user._id}`);
