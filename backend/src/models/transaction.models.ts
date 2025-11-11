@@ -1,9 +1,19 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 
+
+export enum TransactionType {
+  ENTRY_FEE = 'entry_fee',
+  PRIZE_WIN = 'prize_win',
+  ADMIN_COMMISSION = 'admin_commission',
+  REFUND = 'refund',
+  APP_FEE = 'app_fee'
+}
+
 export interface ITransaction extends Document {
   userId: Types.ObjectId;
+  name: string;
   spinWheelId: Types.ObjectId;
-  type: "entry_fee" | "refund" | "winner_payout" | "admin_payout" | "app_fee";
+  type: TransactionType;
   amount: number;
   balanceBefore: number;
   balanceAfter: number;
@@ -35,7 +45,7 @@ const transactionSchema = new Schema<ITransaction>(
     },
     type: {
       type: String,
-      enum: ["entry_fee", "winner_payout", "admin_payout", "refund", "app_fee"],
+      enum: ["entry_fee", "prize_win", "admin_commission", "refund", "app_fee"],
       required: [true, "Transaction type is required"],
     },
     amount: { 
