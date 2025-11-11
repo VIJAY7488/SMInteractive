@@ -1,4 +1,3 @@
-
 import winston from 'winston';
 import path from 'path';
 
@@ -27,7 +26,7 @@ const format = winston.format.combine(
   winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }),
   winston.format.colorize({ all: true }),
   winston.format.printf(
-    (info: any) => `${info.timestamp} ${info.level}: ${info.message}`,
+    (info) => `${info.timestamp} ${info.level}: ${info.message}`,
   ),
 );
 
@@ -59,5 +58,25 @@ const logger = winston.createLogger({
   format,
   transports,
 });
+
+// Specialized loggers for different domains
+export const loggers = {
+  spinWheel: (action: string, spinWheelId: string, metadata?: any) => {
+    logger.info(`[SpinWheel] ${action}`, {
+      spinWheelId,
+      ...metadata,
+    });
+  },
+  transaction: (action: string, userId: string, amount: number, metadata?: any) => {
+    logger.info(`[Transaction] ${action}`, {
+      userId,
+      amount,
+      ...metadata,
+    });
+  },
+  socket: (event: string, metadata?: any) => {
+    logger.info(`[Socket] ${event}`, metadata);
+  },
+};
 
 export default logger;
