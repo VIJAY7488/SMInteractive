@@ -1,7 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
-import { SpinWheelService } from '../services/spinWheelService';
+import { SpinWheelService } from '../services/spinWheel.service';
 import { ValidationError } from '../utils/apiResponse';
 import logger from '../utils/logger';
+import { getSocketServer } from '../config/socket.config';
+import { getScheduler } from '../services/scheduler.service';
 
 /**
  * Create a new spin wheel (Admin only)
@@ -27,6 +29,23 @@ export const createSpinWheel = async (
     );
 
     logger.info(`Spin wheel created by admin ${user._id}`);
+
+    // Schedule auto-start
+    if(spinWheel.autoStartAt) {
+      const scheduler = getScheduler();
+      scheduler.scheduleAutoStart(spinWheel._id.toString(), spinWheel.autoStartAt);
+      logger.info(`Auto-start scheduled for spin wheel ${spinWheel._id} at ${spinWheel.autoStartAt}`);
+    }
+
+    // Emit to all clients that a new spin wheel is available
+    const socketServer = getSocketServer();
+    socketServer.emitToAll('spinwheel:created', {
+      spinWheelId: spinWheel._id,
+      adminName: spinWheel.adminName,
+      entryFee: spinWheel.entryFee,
+      maxParticipants: spinWheel.maxParticipants,
+      autoStartAt: spinWheel.autoStartAt,
+    });
 
     res.status(201).json({
       success: true,
