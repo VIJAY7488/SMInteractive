@@ -15,15 +15,15 @@
 A real-time multiplayer spin wheel game system where users can create spin wheels, join by paying entry fees, and compete for prize pools. The system handles concurrent users, ensures fair coin distribution, and provides real-time updates.
 
 ### Key Features
-- ✅ JWT-based authentication
-- ✅ Role-based access control (Admin/User)
-- ✅ Real-time updates via Socket.IO
-- ✅ Atomic coin transactions
-- ✅ Automatic game management
-- ✅ Comprehensive error handling
-- ✅ Request rate limiting
-- ✅ Detailed logging system
-- ✅ Transaction audit trail
+- JWT-based authentication
+- Role-based access control (Admin/User)
+- Real-time updates via Socket.IO
+- Atomic coin transactions
+- Automatic game management
+- Comprehensive error handling
+- Request rate limiting
+- Detailed logging system
+- Transaction audit trail
 
 ---
 
