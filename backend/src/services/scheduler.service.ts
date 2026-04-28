@@ -207,34 +207,33 @@ export class SpinWheelScheduler {
 
     const timer = setInterval(async () => {
       try {
-        const spinWheel = await SpinWheel.findById(spinWheelId);
+        // Guard: check status before attempting elimination
+        const current = await SpinWheel.findById(spinWheelId).select('status currentEliminationIndex eliminationSequence');
 
-        if (!spinWheel || spinWheel.status !== SpinWheelStatus.IN_PROGRESS) {
+        if (!current || current.status !== SpinWheelStatus.IN_PROGRESS) {
           this.clearEliminationTimer(spinWheelId);
           return;
         }
 
-        // Check if all eliminations are complete
-        if (spinWheel.currentEliminationIndex >= spinWheel.eliminationSequence.length) {
+        if (current.currentEliminationIndex >= current.eliminationSequence.length) {
           this.clearEliminationTimer(spinWheelId);
           return;
         }
 
-        // Eliminate next participant
+        // Eliminate next — returns the fully updated document
         const updatedSpinWheel = await SpinWheelService.eliminateNext(spinWheelId);
 
-        // Emit elimination event
+        // Find which participant was just eliminated (last eliminated in updated doc)
         const socketServer = getSocketServer();
-        const eliminatedUserId = spinWheel.eliminationSequence[spinWheel.currentEliminationIndex];
-        const eliminatedParticipant = spinWheel.participants.find(
-          (p) => p.userId.toString() === eliminatedUserId.toString()
+        const justEliminated = updatedSpinWheel.participants.find(
+          (p) => p.isEliminated && p.eliminationOrder === current.currentEliminationIndex + 1
         );
 
         socketServer.emitToSpinWheel(spinWheelId, 'spinwheel:elimination', {
           spinWheelId,
-          eliminatedUserId: eliminatedUserId.toString(),
-          eliminatedUsername: eliminatedParticipant?.name,
-          eliminationOrder: spinWheel.currentEliminationIndex + 1,
+          eliminatedUserId:   justEliminated?.userId.toString(),
+          eliminatedUsername: justEliminated?.name,
+          eliminationOrder:   justEliminated?.eliminationOrder,
           remainingParticipants: updatedSpinWheel.participants.filter((p) => !p.isEliminated).length,
         });
 
