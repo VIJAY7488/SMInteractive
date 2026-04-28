@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { SpinWheelService } from '../services/spinWheel.service';
+import { ISpinWheel } from '../models/spin_wheels.models';
 import { ValidationError } from '../utils/apiResponse';
 import logger from '../utils/logger';
 import { getSocketServer } from '../config/socket.config';
@@ -31,7 +32,7 @@ export const createSpinWheel = async (
     logger.info(`Spin wheel created by admin ${user._id}`);
 
     // Schedule auto-start
-    if(spinWheel.autoStartAt) {
+    if (spinWheel.autoStartAt) {
       const scheduler = getScheduler();
       scheduler.scheduleAutoStart(spinWheel._id.toString(), spinWheel.autoStartAt);
       logger.info(`Auto-start scheduled for spin wheel ${spinWheel._id} at ${spinWheel.autoStartAt}`);
@@ -40,11 +41,11 @@ export const createSpinWheel = async (
     // Emit to all clients that a new spin wheel is available
     const socketServer = getSocketServer();
     socketServer.emitToAll('spinwheel:created', {
-      spinWheelId: spinWheel._id,
-      adminName: spinWheel.adminName,
-      entryFee: spinWheel.entryFee,
+      spinWheelId:     spinWheel._id,
+      adminName:       spinWheel.adminName,
+      entryFee:        spinWheel.entryFee,
       maxParticipants: spinWheel.maxParticipants,
-      autoStartAt: spinWheel.autoStartAt,
+      autoStartAt:     spinWheel.autoStartAt,
     });
 
     res.status(201).json({
@@ -52,18 +53,18 @@ export const createSpinWheel = async (
       message: 'Spin wheel created successfully',
       data: {
         spinWheel: {
-          id: spinWheel._id,
-          adminId: spinWheel.adminId,
-          adminName: spinWheel.adminName,
-          entryFee: spinWheel.entryFee,
-          status: spinWheel.status,
-          maxParticipants: spinWheel.maxParticipants,
-          minParticipants: spinWheel.minParticipants,
+          id:                   spinWheel._id,
+          adminId:              spinWheel.adminId,
+          adminName:            spinWheel.adminName,
+          entryFee:             spinWheel.entryFee,
+          status:               spinWheel.status,
+          maxParticipants:      spinWheel.maxParticipants,
+          minParticipants:      spinWheel.minParticipants,
           winnerPoolPercentage: spinWheel.winnerPoolPercentage,
-          adminPoolPercentage: spinWheel.adminPoolPercentage,
-          appPoolPercentage: spinWheel.appPoolPercentage,
-          autoStartAt: spinWheel.autoStartAt,
-          createdAt: spinWheel.createdAt,
+          adminPoolPercentage:  spinWheel.adminPoolPercentage,
+          appPoolPercentage:    spinWheel.appPoolPercentage,
+          autoStartAt:          spinWheel.autoStartAt,
+          createdAt:            spinWheel.createdAt,
         },
       },
     });
@@ -87,9 +88,7 @@ export const getActiveSpinWheel = async (
       res.status(200).json({
         success: true,
         message: 'No active spin wheel found',
-        data: {
-          spinWheel: null,
-        },
+        data: { spinWheel: null },
       });
       return;
     }
@@ -99,29 +98,29 @@ export const getActiveSpinWheel = async (
       message: 'Active spin wheel retrieved successfully',
       data: {
         spinWheel: {
-          id: spinWheel._id,
-          adminId: spinWheel.adminId,
-          adminName: spinWheel.adminName,
-          entryFee: spinWheel.entryFee,
-          status: spinWheel.status,
-          participants: spinWheel.participants.map(p => ({
-            userId: p.userId,
-            name: p.name,
-            joinedAt: p.joinedAt,
-            isEliminated: p.isEliminated,
-            eliminatedAt: p.eliminatedAt,
+          id:                spinWheel._id,
+          adminId:           spinWheel.adminId,
+          adminName:         spinWheel.adminName,
+          entryFee:          spinWheel.entryFee,
+          status:            spinWheel.status,
+          participants:      spinWheel.participants.map(p => ({
+            userId:           p.userId,
+            name:             p.name,
+            joinedAt:         p.joinedAt,
+            isEliminated:     p.isEliminated,
+            eliminatedAt:     p.eliminatedAt,
             eliminationOrder: p.eliminationOrder,
           })),
-          maxParticipants: spinWheel.maxParticipants,
-          minParticipants: spinWheel.minParticipants,
+          maxParticipants:   spinWheel.maxParticipants,
+          minParticipants:   spinWheel.minParticipants,
           totalParticipants: spinWheel.participants.length,
-          winnerPool: spinWheel.winnerPool,
-          adminPool: spinWheel.adminPool,
-          appPool: spinWheel.appPool,
-          totalPool: spinWheel.winnerPool + spinWheel.adminPool + spinWheel.appPool,
-          autoStartAt: spinWheel.autoStartAt,
-          startedAt: spinWheel.startedAt,
-          createdAt: spinWheel.createdAt,
+          winnerPool:        spinWheel.winnerPool,
+          adminPool:         spinWheel.adminPool,
+          appPool:           spinWheel.appPool,
+          totalPool:         spinWheel.winnerPool + spinWheel.adminPool + spinWheel.appPool,
+          autoStartAt:       spinWheel.autoStartAt,
+          startedAt:         spinWheel.startedAt,
+          createdAt:         spinWheel.createdAt,
         },
       },
     });
@@ -148,35 +147,35 @@ export const getSpinWheelById = async (
       message: 'Spin wheel retrieved successfully',
       data: {
         spinWheel: {
-          id: spinWheel._id,
-          adminId: spinWheel.adminId,
-          adminName: spinWheel.adminName,
-          entryFee: spinWheel.entryFee,
-          status: spinWheel.status,
-          participants: spinWheel.participants.map(p => ({
-            userId: p.userId,
-            name: p.name,
-            joinedAt: p.joinedAt,
-            entryFeePaid: p.entryFeePaid,
-            isEliminated: p.isEliminated,
-            eliminatedAt: p.eliminatedAt,
+          id:                      spinWheel._id,
+          adminId:                 spinWheel.adminId,
+          adminName:               spinWheel.adminName,
+          entryFee:                spinWheel.entryFee,
+          status:                  spinWheel.status,
+          participants:            spinWheel.participants.map(p => ({
+            userId:           p.userId,
+            name:             p.name,
+            joinedAt:         p.joinedAt,
+            entryFeePaid:     p.entryFeePaid,
+            isEliminated:     p.isEliminated,
+            eliminatedAt:     p.eliminatedAt,
             eliminationOrder: p.eliminationOrder,
           })),
-          maxParticipants: spinWheel.maxParticipants,
-          minParticipants: spinWheel.minParticipants,
-          winnerPool: spinWheel.winnerPool,
-          adminPool: spinWheel.adminPool,
-          appPool: spinWheel.appPool,
-          totalPool: spinWheel.winnerPool + spinWheel.adminPool + spinWheel.appPool,
-          winnerId: spinWheel.winnerId,
-          winnerName: spinWheel.winnerName,
-          eliminationSequence: spinWheel.eliminationSequence,
+          maxParticipants:         spinWheel.maxParticipants,
+          minParticipants:         spinWheel.minParticipants,
+          winnerPool:              spinWheel.winnerPool,
+          adminPool:               spinWheel.adminPool,
+          appPool:                 spinWheel.appPool,
+          totalPool:               spinWheel.winnerPool + spinWheel.adminPool + spinWheel.appPool,
+          winnerId:                spinWheel.winnerId,
+          winnerName:              spinWheel.winnerName,
+          eliminationSequence:     spinWheel.eliminationSequence,
           currentEliminationIndex: spinWheel.currentEliminationIndex,
-          autoStartAt: spinWheel.autoStartAt,
-          startedAt: spinWheel.startedAt,
-          completedAt: spinWheel.completedAt,
-          createdAt: spinWheel.createdAt,
-          updatedAt: spinWheel.updatedAt,
+          autoStartAt:             spinWheel.autoStartAt,
+          startedAt:               spinWheel.startedAt,
+          completedAt:             spinWheel.completedAt,
+          createdAt:               spinWheel.createdAt,
+          updatedAt:               spinWheel.updatedAt,
         },
       },
     });
@@ -201,7 +200,8 @@ export const joinSpinWheel = async (
       throw new ValidationError('User not authenticated');
     }
 
-    const spinWheel = await SpinWheelService.joinSpinWheel(
+    // Service returns { spinWheel, newUserBalance } — avoids stale balance from req.user
+    const { spinWheel, newUserBalance } = await SpinWheelService.joinSpinWheel(
       spinWheelId,
       user._id.toString(),
       user.name
@@ -209,21 +209,31 @@ export const joinSpinWheel = async (
 
     logger.info(`User ${user._id} joined spin wheel ${spinWheelId}`);
 
+    // Emit so real-time clients see the new participant immediately
+    const socketServer = getSocketServer();
+    socketServer.emitToSpinWheel(spinWheelId, 'spinwheel:participant_joined', {
+      spinWheelId,
+      userId:            user._id.toString(),
+      name:              user.name,
+      totalParticipants: spinWheel.participants.length,
+      totalPool:         spinWheel.winnerPool + spinWheel.adminPool + spinWheel.appPool,
+    });
+
     res.status(200).json({
       success: true,
       message: 'Successfully joined spin wheel',
       data: {
         spinWheel: {
-          id: spinWheel._id,
-          status: spinWheel.status,
+          id:                spinWheel._id,
+          status:            spinWheel.status,
           totalParticipants: spinWheel.participants.length,
-          maxParticipants: spinWheel.maxParticipants,
-          winnerPool: spinWheel.winnerPool,
-          adminPool: spinWheel.adminPool,
-          appPool: spinWheel.appPool,
-          totalPool: spinWheel.winnerPool + spinWheel.adminPool + spinWheel.appPool,
+          maxParticipants:   spinWheel.maxParticipants,
+          winnerPool:        spinWheel.winnerPool,
+          adminPool:         spinWheel.adminPool,
+          appPool:           spinWheel.appPool,
+          totalPool:         spinWheel.winnerPool + spinWheel.adminPool + spinWheel.appPool,
         },
-        userBalance: user.coins - spinWheel.entryFee,
+        userBalance: newUserBalance,  // ✅ actual post-deduction balance from DB
       },
     });
   } catch (error) {
@@ -249,18 +259,35 @@ export const startSpinWheel = async (
 
     const spinWheel = await SpinWheelService.startSpinWheel(spinWheelId);
 
-    logger.info(`Spin wheel ${spinWheelId} started by admin ${user._id}`);
+    // Start the elimination timer — only the auto-start path did this before this fix
+    const scheduler = getScheduler();
+    scheduler.startEliminationProcess(spinWheelId);
+
+    // Broadcast so all room clients update their UI immediately
+    const socketServer = getSocketServer();
+    socketServer.emitToSpinWheel(spinWheelId, 'spinwheel:started', {
+      spinWheelId,
+      startedBy:           'admin',
+      adminId:             user._id.toString(),
+      adminName:           user.name,
+      totalParticipants:   spinWheel.participants.length,
+      eliminationInterval: spinWheel.eliminationInterval,
+      startedAt:           spinWheel.startedAt,
+    });
+
+    logger.info(`Spin wheel ${spinWheelId} started manually by admin ${user._id}`);
 
     res.status(200).json({
       success: true,
       message: 'Spin wheel started successfully',
       data: {
         spinWheel: {
-          id: spinWheel._id,
-          status: spinWheel.status,
-          totalParticipants: spinWheel.participants.length,
+          id:                  spinWheel._id,
+          status:              spinWheel.status,
+          totalParticipants:   spinWheel.participants.length,
           eliminationSequence: spinWheel.eliminationSequence,
-          startedAt: spinWheel.startedAt,
+          eliminationInterval: spinWheel.eliminationInterval,
+          startedAt:           spinWheel.startedAt,
         },
       },
     });
@@ -285,7 +312,24 @@ export const abortSpinWheel = async (
       throw new ValidationError('User not authenticated');
     }
 
+    // Clear any running timer before the DB status changes
+    const scheduler = getScheduler();
+    scheduler.clearAutoStartTimer(spinWheelId);
+
     const spinWheel = await SpinWheelService.abortSpinWheel(spinWheelId);
+
+    // Notify all room clients so they redirect/update their UI
+    const socketServer = getSocketServer();
+    socketServer.emitToSpinWheel(spinWheelId, 'spinwheel:aborted', {
+      spinWheelId,
+      abortedBy:            'admin',
+      adminId:              user._id.toString(),
+      adminName:            user.name,
+      reason:               'Manually aborted by admin',
+      participantsRefunded: spinWheel.participants.length,
+      totalRefunded:        spinWheel.participants.reduce((s, p) => s + p.entryFeePaid, 0),
+      completedAt:          spinWheel.completedAt,
+    });
 
     logger.info(`Spin wheel ${spinWheelId} aborted by admin ${user._id}`);
 
@@ -294,10 +338,11 @@ export const abortSpinWheel = async (
       message: 'Spin wheel aborted and participants refunded',
       data: {
         spinWheel: {
-          id: spinWheel._id,
-          status: spinWheel.status,
+          id:                   spinWheel._id,
+          status:               spinWheel.status,
           participantsRefunded: spinWheel.participants.length,
-          completedAt: spinWheel.completedAt,
+          totalRefunded:        spinWheel.participants.reduce((s, p) => s + p.entryFeePaid, 0),
+          completedAt:          spinWheel.completedAt,
         },
       },
     });
@@ -322,9 +367,7 @@ export const getSpinWheelStats = async (
     res.status(200).json({
       success: true,
       message: 'Spin wheel statistics retrieved successfully',
-      data: {
-        stats,
-      },
+      data: { stats },
     });
   } catch (error) {
     next(error);
@@ -340,34 +383,31 @@ export const getSpinWheelHistory = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
-    const status = req.query.status as string;
+    const page   = parseInt(req.query.page   as string) || 1;
+    const limit  = parseInt(req.query.limit  as string) || 10;
+    const status = req.query.status as string | undefined;
 
-    const filters: any = {};
-    if (status) {
-      filters.status = status;
-    }
-
-    const result = await SpinWheelService.getSpinWheelHistory(page, limit, filters);
+    const result = await SpinWheelService.getSpinWheelHistory(page, limit, {
+      status: status as any,
+    });
 
     res.status(200).json({
       success: true,
       message: 'Spin wheel history retrieved successfully',
       data: {
-        spinWheels: result.spinWheels.map(sw => ({
-          id: sw._id,
-          adminId: sw.adminId,
-          adminName: sw.adminName,
-          entryFee: sw.entryFee,
-          status: sw.status,
+        spinWheels: result.data.map((sw: ISpinWheel) => ({
+          id:                sw._id,
+          adminId:           sw.adminId,
+          adminName:         sw.adminName,
+          entryFee:          sw.entryFee,
+          status:            sw.status,
           totalParticipants: sw.participants.length,
-          totalPool: sw.winnerPool + sw.adminPool + sw.appPool,
-          winnerId: sw.winnerId,
-          winnerName: sw.winnerName,
-          createdAt: sw.createdAt,
-          startedAt: sw.startedAt,
-          completedAt: sw.completedAt,
+          totalPool:         sw.winnerPool + sw.adminPool + sw.appPool,
+          winnerId:          sw.winnerId,
+          winnerName:        sw.winnerName,
+          createdAt:         sw.createdAt,
+          startedAt:         sw.startedAt,
+          completedAt:       sw.completedAt,
         })),
         pagination: result.pagination,
       },
@@ -392,7 +432,7 @@ export const getUserSpinWheels = async (
       throw new ValidationError('User not authenticated');
     }
 
-    const page = parseInt(req.query.page as string) || 1;
+    const page  = parseInt(req.query.page  as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
 
     const result = await SpinWheelService.getUserSpinWheels(
@@ -405,25 +445,24 @@ export const getUserSpinWheels = async (
       success: true,
       message: 'User spin wheel history retrieved successfully',
       data: {
-        spinWheels: result.spinWheels.map(sw => {
+        spinWheels: result.data.map((sw: ISpinWheel) => {
           const userParticipant = sw.participants.find(
-            p => p.userId.toString() === user._id.toString()
+            (p) => p.userId.toString() === user._id.toString()
           );
-
           return {
-            id: sw._id,
-            adminName: sw.adminName,
-            entryFee: sw.entryFee,
-            status: sw.status,
-            totalParticipants: sw.participants.length,
-            totalPool: sw.winnerPool + sw.adminPool + sw.appPool,
-            isWinner: sw.winnerId?.toString() === user._id.toString(),
-            winnerName: sw.winnerName,
-            userEliminated: userParticipant?.isEliminated,
+            id:                   sw._id,
+            adminName:            sw.adminName,
+            entryFee:             sw.entryFee,
+            status:               sw.status,
+            totalParticipants:    sw.participants.length,
+            totalPool:            sw.winnerPool + sw.adminPool + sw.appPool,
+            isWinner:             sw.winnerId?.toString() === user._id.toString(),
+            winnerName:           sw.winnerName,
+            userEliminated:       userParticipant?.isEliminated,
             userEliminationOrder: userParticipant?.eliminationOrder,
-            prizeWon: sw.winnerId?.toString() === user._id.toString() ? sw.winnerPool : 0,
-            createdAt: sw.createdAt,
-            completedAt: sw.completedAt,
+            prizeWon:             sw.winnerId?.toString() === user._id.toString() ? sw.winnerPool : 0,
+            createdAt:            sw.createdAt,
+            completedAt:          sw.completedAt,
           };
         }),
         pagination: result.pagination,
