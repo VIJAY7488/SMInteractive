@@ -1,3 +1,73 @@
+# ── Dependencies ──────────────────────────────────────────────────────────────
 node_modules/
+.npm
+.pnp
+.pnp.js
 
+# ── Build Output ──────────────────────────────────────────────────────────────
+dist/
+build/
+out/
+
+# ── Environment Variables ─────────────────────────────────────────────────────
 .env
+.env.local
+.env.development
+.env.staging
+.env.production
+.env.test
+# Keep the example file — it has no real secrets
+!.env.example
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ── Test & Coverage ───────────────────────────────────────────────────────────
+coverage/
+.nyc_output/
+*.lcov
+
+# ── TypeScript Cache ──────────────────────────────────────────────────────────
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# ── OS Generated ──────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# ── IDE / Editor ──────────────────────────────────────────────────────────────
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.swp
+
+# ── Runtime & Debug ───────────────────────────────────────────────────────────
+pids/
+*.pid
+*.seed
+*.pid.lock
+.node_repl_history
+
+# ── Package Manager ───────────────────────────────────────────────────────────
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+.yarn/
