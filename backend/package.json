@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "nodemon --exec ts-node src/server.ts",
     "build": "tsc && cp ./package.json ./dist",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "keywords": [],
   "author": "",
@@ -14,20 +17,36 @@
   "type": "commonjs",
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
+    "helmet": "^8.1.0",
+    "joi": "^18.1.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.19.3",
+    "morgan": "^1.10.1",
     "socket.io": "^4.8.1",
-    "uuid": "^13.0.0"
+    "uuid": "^14.0.0",
+    "winston": "^3.19.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.5",
+    "@types/jest": "^30.0.0",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/morgan": "^1.9.10",
     "@types/node": "^24.10.0",
+    "@types/supertest": "^7.2.0",
+    "@types/winston": "^2.4.4",
+    "jest": "^30.3.0",
     "nodemon": "^3.1.10",
     "prettier": "^3.6.2",
+    "supertest": "^7.2.2",
+    "ts-jest": "^29.4.9",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   }
