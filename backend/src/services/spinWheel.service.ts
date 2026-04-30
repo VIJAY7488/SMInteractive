@@ -41,13 +41,13 @@ export class SpinWheelService {
     entryFee: number,
     maxParticipants: number
   ): Promise<ISpinWheel> {
-    // Fix #4: Read distribution config from DB first, fall back to env, then defaults
+    // Read distribution config from DB first, fall back to env, then defaults
     const winnerPoolPercentage = await SpinWheelService.getConfig('WINNER_POOL_PERCENTAGE', parseInt(process.env.WINNER_POOL_PERCENTAGE || '70'));
-    const adminPoolPercentage  = await SpinWheelService.getConfig('ADMIN_POOL_PERCENTAGE',  parseInt(process.env.ADMIN_POOL_PERCENTAGE  || '20'));
-    const appPoolPercentage    = await SpinWheelService.getConfig('APP_POOL_PERCENTAGE',    parseInt(process.env.APP_POOL_PERCENTAGE    || '10'));
-    const autoStartTime        = await SpinWheelService.getConfig('AUTO_START_TIMEOUT',     parseInt(process.env.AUTO_START_TIMEOUT     || '180000'));
-    const eliminationInterval  = await SpinWheelService.getConfig('ELIMINATION_INTERVAL',   parseInt(process.env.ELIMINATION_INTERVAL   || '7000'));
-    const minParticipants      = await SpinWheelService.getConfig('MIN_PARTICIPANTS',        parseInt(process.env.MIN_PARTICIPANTS        || '3'));
+    const adminPoolPercentage = await SpinWheelService.getConfig('ADMIN_POOL_PERCENTAGE', parseInt(process.env.ADMIN_POOL_PERCENTAGE || '20'));
+    const appPoolPercentage = await SpinWheelService.getConfig('APP_POOL_PERCENTAGE', parseInt(process.env.APP_POOL_PERCENTAGE || '10'));
+    const autoStartTime = await SpinWheelService.getConfig('AUTO_START_TIMEOUT', parseInt(process.env.AUTO_START_TIMEOUT || '180000'));
+    const eliminationInterval = await SpinWheelService.getConfig('ELIMINATION_INTERVAL', parseInt(process.env.ELIMINATION_INTERVAL || '7000'));
+    const minParticipants = await SpinWheelService.getConfig('MIN_PARTICIPANTS', parseInt(process.env.MIN_PARTICIPANTS || '3'));
 
     if (winnerPoolPercentage + adminPoolPercentage + appPoolPercentage !== 100) {
       throw new SpinWheelError('Distribution percentages must sum to 100');
@@ -142,18 +142,18 @@ export class SpinWheelService {
 
       // Calculate pool splits
       const winnerAmount = Math.round((spinWheel.entryFee * spinWheel.winnerPoolPercentage) / 100);
-      const adminAmount  = Math.round((spinWheel.entryFee * spinWheel.adminPoolPercentage)  / 100);
+      const adminAmount = Math.round((spinWheel.entryFee * spinWheel.adminPoolPercentage) / 100);
       // Remainder goes to app pool to avoid floating-point drift
-      const appAmount    = spinWheel.entryFee - winnerAmount - adminAmount;
+      const appAmount = spinWheel.entryFee - winnerAmount - adminAmount;
 
       // Update spin wheel
       spinWheel.winnerPool += winnerAmount;
-      spinWheel.adminPool  += adminAmount;
-      spinWheel.appPool    += appAmount;
+      spinWheel.adminPool += adminAmount;
+      spinWheel.appPool += appAmount;
       spinWheel.participants.push({
-        userId:       new mongoose.Types.ObjectId(userId),
+        userId: new mongoose.Types.ObjectId(userId),
         name,
-        joinedAt:     new Date(),
+        joinedAt: new Date(),
         entryFeePaid: spinWheel.entryFee,
         isEliminated: false,
       });
@@ -166,14 +166,14 @@ export class SpinWheelService {
 
       // Record transaction
       const transaction = new Transaction({
-        userId:       new mongoose.Types.ObjectId(userId),
+        userId: new mongoose.Types.ObjectId(userId),
         name,
-        spinWheelId:  spinWheel._id,
-        type:         TransactionType.ENTRY_FEE,
-        amount:       -spinWheel.entryFee,
+        spinWheelId: spinWheel._id,
+        type: TransactionType.ENTRY_FEE,
+        amount: -spinWheel.entryFee,
         balanceBefore,
         balanceAfter: user.coins,
-        status:       'completed',
+        status: 'completed',
         metadata: {
           distributionBreakdown: { winnerPool: winnerAmount, adminPool: adminAmount, appPool: appAmount },
         },
@@ -183,8 +183,8 @@ export class SpinWheelService {
       await session.commitTransaction();
 
       loggers.transaction('Entry fee paid', userId, -spinWheel.entryFee, {
-        spinWheelId:       spinWheel._id.toString(),
-        newBalance:        user.coins,
+        spinWheelId: spinWheel._id.toString(),
+        newBalance: user.coins,
         totalParticipants: spinWheel.participants.length,
       });
 
@@ -225,16 +225,16 @@ export class SpinWheelService {
 
     // Generate fair random elimination sequence (Fisher-Yates)
     const participantIds = spinWheel.participants.map((p) => p.userId);
-    spinWheel.eliminationSequence    = SpinWheelService.shuffleArray([...participantIds]);
+    spinWheel.eliminationSequence = SpinWheelService.shuffleArray([...participantIds]);
     spinWheel.currentEliminationIndex = 0;
-    spinWheel.status                 = SpinWheelStatus.IN_PROGRESS;
-    spinWheel.startedAt              = new Date();
+    spinWheel.status = SpinWheelStatus.IN_PROGRESS;
+    spinWheel.startedAt = new Date();
 
     await spinWheel.save();
 
     loggers.spinWheel('Started (manual)', spinWheel._id.toString(), {
-      participants:       spinWheel.participants.length,
-      totalPool:          spinWheel.winnerPool + spinWheel.adminPool + spinWheel.appPool,
+      participants: spinWheel.participants.length,
+      totalPool: spinWheel.winnerPool + spinWheel.adminPool + spinWheel.appPool,
       eliminationSequence: spinWheel.eliminationSequence.map((id) => id.toString()),
     });
 
@@ -273,16 +273,16 @@ export class SpinWheelService {
         await user.save({ session });
 
         await new Transaction({
-          userId:       participant.userId,
-          name:         participant.name,
-          spinWheelId:  spinWheel._id,
-          type:         TransactionType.REFUND,
-          amount:       participant.entryFeePaid,
+          userId: participant.userId,
+          name: participant.name,
+          spinWheelId: spinWheel._id,
+          type: TransactionType.REFUND,
+          amount: participant.entryFeePaid,
           balanceBefore,
           balanceAfter: user.coins,
-          status:       'completed',
+          status: 'completed',
           metadata: {
-            reason:          'Spin wheel aborted',
+            reason: 'Spin wheel aborted',
             originalEntryFee: participant.entryFeePaid,
           },
         }).save({ session });
@@ -293,10 +293,10 @@ export class SpinWheelService {
       }
 
       // Mark wheel as aborted and zero-out pools
-      spinWheel.winnerPool  = 0;
-      spinWheel.adminPool   = 0;
-      spinWheel.appPool     = 0;
-      spinWheel.status      = SpinWheelStatus.ABORTED;
+      spinWheel.winnerPool = 0;
+      spinWheel.adminPool = 0;
+      spinWheel.appPool = 0;
+      spinWheel.status = SpinWheelStatus.ABORTED;
       spinWheel.completedAt = new Date();
       await spinWheel.save({ session });
 
@@ -304,7 +304,7 @@ export class SpinWheelService {
 
       loggers.spinWheel('Aborted and refunded', spinWheel._id.toString(), {
         participantsRefunded: spinWheel.participants.length,
-        totalRefunded:        spinWheel.participants.reduce((s, p) => s + p.entryFeePaid, 0),
+        totalRefunded: spinWheel.participants.reduce((s, p) => s + p.entryFeePaid, 0),
       });
 
       return spinWheel;
@@ -326,11 +326,11 @@ export class SpinWheelService {
    * Returns the fully updated spin wheel document.
    */
   static async eliminateNext(spinWheelId: string): Promise<ISpinWheel> {
-    // Step 1: Atomically bump the index and get the current state in one round-trip.
+    // Atomically bump the index and get the current state in one round-trip.
     // This prevents two concurrent calls from processing the same index.
     const beforeUpdate = await SpinWheel.findOneAndUpdate(
       {
-        _id:    spinWheelId,
+        _id: spinWheelId,
         status: SpinWheelStatus.IN_PROGRESS,
         // Only update if there are still eliminations left
         $expr: {
@@ -355,19 +355,19 @@ export class SpinWheelService {
     const indexToEliminate = beforeUpdate.currentEliminationIndex;
     const eliminatedUserId = beforeUpdate.eliminationSequence[indexToEliminate];
 
-    // Step 2: Mark the participant as eliminated
+    // Mark the participant as eliminated
     await SpinWheel.updateOne(
       { _id: spinWheelId, 'participants.userId': eliminatedUserId },
       {
         $set: {
-          'participants.$.isEliminated':    true,
-          'participants.$.eliminatedAt':    new Date(),
+          'participants.$.isEliminated': true,
+          'participants.$.eliminatedAt': new Date(),
           'participants.$.eliminationOrder': indexToEliminate + 1,
         },
       }
     );
 
-    // Step 3: Load the fresh document to determine remaining participants
+    // Load the fresh document to determine remaining participants
     const updatedSpinWheel = await SpinWheel.findById(spinWheelId);
     if (!updatedSpinWheel) throw new NotFoundError('Spin wheel not found after update');
 
@@ -379,7 +379,7 @@ export class SpinWheelService {
       remainingCount,
     });
 
-    // Step 4: If only 1 remains → complete the game
+    // If only 1 remains → complete the game
     if (remainingCount === 1) {
       await SpinWheelService.completeSpinWheel(updatedSpinWheel);
       // Reload after completion to return final state
@@ -408,9 +408,9 @@ export class SpinWheelService {
         { _id: spinWheel._id },
         {
           $set: {
-            status:      SpinWheelStatus.COMPLETED,
-            winnerId:    winner.userId,
-            winnerName:  winner.name,
+            status: SpinWheelStatus.COMPLETED,
+            winnerId: winner.userId,
+            winnerName: winner.name,
             completedAt: new Date(),
           },
         },
@@ -425,18 +425,18 @@ export class SpinWheelService {
         await winnerUser.save({ session });
 
         await new Transaction({
-          userId:       winner.userId,
-          name:         winner.name,
-          spinWheelId:  spinWheel._id,
-          type:         TransactionType.PRIZE_WIN,
-          amount:       spinWheel.winnerPool,
+          userId: winner.userId,
+          name: winner.name,
+          spinWheelId: spinWheel._id,
+          type: TransactionType.PRIZE_WIN,
+          amount: spinWheel.winnerPool,
           balanceBefore: winnerBalanceBefore,
           balanceAfter: winnerUser.coins,
-          status:       'completed',
+          status: 'completed',
           metadata: {
-            participants:    spinWheel.participants.length,
-            totalPrizePool:  spinWheel.winnerPool,
-            entryFee:        spinWheel.entryFee,
+            participants: spinWheel.participants.length,
+            totalPrizePool: spinWheel.winnerPool,
+            entryFee: spinWheel.entryFee,
           },
         }).save({ session });
 
@@ -453,18 +453,18 @@ export class SpinWheelService {
         await adminUser.save({ session });
 
         await new Transaction({
-          userId:       spinWheel.adminId,
-          name:         spinWheel.adminName,
-          spinWheelId:  spinWheel._id,
-          type:         TransactionType.ADMIN_COMMISSION,
-          amount:       spinWheel.adminPool,
+          userId: spinWheel.adminId,
+          name: spinWheel.adminName,
+          spinWheelId: spinWheel._id,
+          type: TransactionType.ADMIN_COMMISSION,
+          amount: spinWheel.adminPool,
           balanceBefore: adminBalanceBefore,
           balanceAfter: adminUser.coins,
-          status:       'completed',
+          status: 'completed',
           metadata: {
-            winnerId:         winner.userId,
-            winnerName:       winner.name,
-            participants:     spinWheel.participants.length,
+            winnerId: winner.userId,
+            winnerName: winner.name,
+            participants: spinWheel.participants.length,
             commissionAmount: spinWheel.adminPool,
           },
         }).save({ session });
@@ -476,14 +476,14 @@ export class SpinWheelService {
 
       // Record app fee (system entry — balance stays in app)
       await new Transaction({
-        userId:       spinWheel.adminId,
-        name:         'SYSTEM',
-        spinWheelId:  spinWheel._id,
-        type:         TransactionType.APP_FEE,
-        amount:       spinWheel.appPool,
+        userId: spinWheel.adminId,
+        name: 'SYSTEM',
+        spinWheelId: spinWheel._id,
+        type: TransactionType.APP_FEE,
+        amount: spinWheel.appPool,
         balanceBefore: 0,
         balanceAfter: 0,
-        status:       'completed',
+        status: 'completed',
         metadata: {
           appFeeAmount: spinWheel.appPool,
           participants: spinWheel.participants.length,
@@ -493,11 +493,11 @@ export class SpinWheelService {
       await session.commitTransaction();
 
       loggers.spinWheel('Completed', spinWheel._id.toString(), {
-        winnerId:       winner.userId.toString(),
-        winnerName:     winner.name,
-        winnerPrize:    spinWheel.winnerPool,
+        winnerId: winner.userId.toString(),
+        winnerName: winner.name,
+        winnerPrize: spinWheel.winnerPool,
         adminCommission: spinWheel.adminPool,
-        appFee:         spinWheel.appPool,
+        appFee: spinWheel.appPool,
         totalParticipants: spinWheel.participants.length,
       });
     } catch (error) {
@@ -529,7 +529,7 @@ export class SpinWheelService {
   ): Promise<PaginationResult<ISpinWheel>> {
     const skip = (page - 1) * limit;
     const query: Record<string, unknown> = {};
-    if (filters.status)  query.status  = filters.status;
+    if (filters.status) query.status = filters.status;
     if (filters.adminId) query.adminId = filters.adminId;
 
     const [data, total] = await Promise.all([
@@ -545,7 +545,7 @@ export class SpinWheelService {
     page: number = 1,
     limit: number = 10
   ): Promise<PaginationResult<ISpinWheel>> {
-    const skip  = (page - 1) * limit;
+    const skip = (page - 1) * limit;
     const query = { 'participants.userId': new mongoose.Types.ObjectId(userId) };
 
     const [data, total] = await Promise.all([
@@ -559,9 +559,9 @@ export class SpinWheelService {
   static async canUserJoin(spinWheelId: string, userId: string): Promise<boolean> {
     const spinWheel = await SpinWheel.findById(spinWheelId);
     if (!spinWheel || spinWheel.status !== SpinWheelStatus.WAITING) return false;
-    if (spinWheel.adminId.toString() === userId)                      return false;
+    if (spinWheel.adminId.toString() === userId) return false;
     if (spinWheel.participants.some((p) => p.userId.toString() === userId)) return false;
-    if (spinWheel.participants.length >= spinWheel.maxParticipants)   return false;
+    if (spinWheel.participants.length >= spinWheel.maxParticipants) return false;
     return true;
   }
 
@@ -570,9 +570,9 @@ export class SpinWheelService {
     if (!spinWheel) throw new NotFoundError('Spin wheel not found');
 
     const totalParticipants = spinWheel.participants.length;
-    const eliminatedCount   = spinWheel.participants.filter((p) => p.isEliminated).length;
-    const remainingCount    = totalParticipants - eliminatedCount;
-    const totalPool         = spinWheel.winnerPool + spinWheel.adminPool + spinWheel.appPool;
+    const eliminatedCount = spinWheel.participants.filter((p) => p.isEliminated).length;
+    const remainingCount = totalParticipants - eliminatedCount;
+    const totalPool = spinWheel.winnerPool + spinWheel.adminPool + spinWheel.appPool;
 
     return {
       status: spinWheel.status,
@@ -580,13 +580,13 @@ export class SpinWheelService {
       eliminatedCount,
       remainingCount,
       totalPool,
-      winnerPool:  spinWheel.winnerPool,
-      adminPool:   spinWheel.adminPool,
-      appPool:     spinWheel.appPool,
-      entryFee:    spinWheel.entryFee,
-      winner:      spinWheel.winnerId ? { userId: spinWheel.winnerId, name: spinWheel.winnerName } : null,
-      createdAt:   spinWheel.createdAt,
-      startedAt:   spinWheel.startedAt,
+      winnerPool: spinWheel.winnerPool,
+      adminPool: spinWheel.adminPool,
+      appPool: spinWheel.appPool,
+      entryFee: spinWheel.entryFee,
+      winner: spinWheel.winnerId ? { userId: spinWheel.winnerId, name: spinWheel.winnerName } : null,
+      createdAt: spinWheel.createdAt,
+      startedAt: spinWheel.startedAt,
       completedAt: spinWheel.completedAt,
     };
   }
