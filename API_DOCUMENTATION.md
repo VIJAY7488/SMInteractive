@@ -634,7 +634,7 @@ Authorization: Bearer <adminAccessToken>
 ```
 
 ### 2. Get System Analytics
-**GET** `/admin/analytics?startDate=2025-01-01&endDate=2025-01-31`
+**GET** `/admin/analytics?startDate=2026-04-25&endDate=2026-04-30`
 
 **Headers:**
 ```
